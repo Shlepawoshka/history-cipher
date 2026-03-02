@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История шифров | Интерактивный музей криптографии</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">🔐 История шифров</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Главная</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/encrypt">Шифратор</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/decrypt">Дешифратор</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">О проекте</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Хронология шифров -->
+    <div class="container my-5">
+        <h1 class="text-center mb-5">История защиты информации: от античности до наших дней</h1>
+        
+        <div class="timeline">
+            <!-- Древний мир -->
+            <div class="timeline-item">
+                <div class="timeline-badge bg-primary">VII в. до н.э.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>Сцитала (Древняя Спарта)</h3>
+                        <p>Первый шифровальный прибор — жезл, на который наматывалась лента с текстом. 
+                           Прочитать сообщение можно было только имея жезл такого же диаметра.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge bg-primary">II в. до н.э.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>Квадрат Полибия</h3>
+                        <p>Таблица 5×5, где каждая буква заменялась парой чисел — номер строки и столбца.
+                           Использовался для передачи сигналов факелами.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge bg-primary">I в. до н.э.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>Шифр Цезаря</h3>
+                        <p>Каждая буква сдвигалась на фиксированное число позиций в алфавите.
+                           <a href="/encrypt" class="btn btn-sm btn-outline-primary mt-2">Попробовать →</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Средневековье -->
+            <div class="timeline-item">
+                <div class="timeline-badge bg-success">IX в.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>Частотный анализ (Аль-Кинди)</h3>
+                        <p>Арабский математик впервые описал метод взлома шифров на основе частоты появления букв.
+                           Это открытие сделало моноалфавитные шифры уязвимыми.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge bg-success">XVI в.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>Шифр Виженера</h3>
+                        <p>Первый полиалфавитный шифр. Использовал ключевое слово для определения сдвига каждой буквы.
+                           Считался невзламываемым 300 лет. <a href="/encrypt" class="btn btn-sm btn-outline-success mt-2">Попробовать →</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- XX век -->
+            <div class="timeline-item">
+                <div class="timeline-badge bg-warning text-dark">1918 г.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>Энигма</h3>
+                        <p>Немецкая шифровальная машина, использовавшая роторы для создания сложных шифров.
+                           Взломана Аланом Тьюрингом в Блетчли-Парке.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge bg-warning text-dark">1942 г.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>Код Навахо</h3>
+                        <p>Индейцы племени навахо использовали родной язык для передачи секретных сообщений.
+                           Единственный нераскрытый код в истории.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Цифровая эра -->
+            <div class="timeline-item">
+                <div class="timeline-badge bg-danger">1976 г.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>Криптография с открытым ключом</h3>
+                        <p>Диффи и Хеллман предложили использовать пару ключей: открытый для шифрования 
+                           и закрытый для расшифровки. Революция в криптографии.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge bg-danger">1977 г.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>RSA</h3>
+                        <p>Первый алгоритм асимметричного шифрования, основанный на сложности разложения 
+                           больших чисел на простые множители.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-badge bg-info">1994 г.</div>
+                <div class="timeline-content card">
+                    <div class="card-body">
+                        <h3>Квантовая угроза</h3>
+                        <p>Питер Шор предложил алгоритм, позволяющий квантовому компьютеру взламывать RSA.
+                           Начало эры постквантовой криптографии.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Призыв к действию -->
+        <div class="text-center my-5">
+            <h2>Попробуйте сами!</h2>
+            <p class="lead">Зашифруйте сообщение любым из исторических шифров</p>
+            <a href="/encrypt" class="btn btn-primary btn-lg">Открыть шифратор</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
