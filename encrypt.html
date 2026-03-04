@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шифратор | История шифров</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .cipher-card {
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+            height: 100%;
+        }
+        .cipher-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .cipher-card.selected {
+            border-color: #007bff;
+            background-color: #f0f7ff;
+        }
+        .history-badge {
+            background-color: #6c757d;
+            color: white;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .nav-link.active {
+            font-weight: bold;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <span style="font-size: 1.5rem;">🔐</span> История шифров
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/encrypt">Шифратор</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/decrypt">Дешифратор</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">О проекте</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumbs (хлебные крошки) для навигации -->
+    <div class="container mt-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Главная</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Шифратор</li>
+                <li class="breadcrumb-item"><a href="/about" class="text-decoration-none">О проекте</a></li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Заголовок с кнопкой к About -->
+    <div class="bg-primary text-white py-4">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5 mb-2">🔒 Шифратор данных</h1>
+                    <p class="lead mb-0">Зашифруйте сообщение любым из исторических методов</p>
+                </div>
+                <a href="/about" class="btn btn-light btn-lg">
+                    <span>📚</span> О проекте
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container my-4">
+        <!-- УДАЛЕН блок с исторической справкой -->
+
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <!-- Форма шифрования -->
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Создание зашифрованного сообщения</h3>
+                        <span class="badge bg-light text-dark">3 метода</span>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="/encrypt" id="encryptForm">
+                            <!-- Выбор метода -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">1. Выберите метод шифрования:</label>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card cipher-card" data-cipher="caesar" onclick="selectCipher('caesar')">
+                                            <div class="card-body text-center">
+                                                <h5>🏛️ Шифр Цезаря</h5>
+                                                <span class="history-badge">I век до н.э.</span>
+                                                <p class="small text-muted mt-2 mb-0">Сдвиг букв на фиксированное число</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card cipher-card" data-cipher="vigenere" onclick="selectCipher('vigenere')">
+                                            <div class="card-body text-center">
+                                                <h5>📜 Шифр Виженера</h5>
+                                                <span class="history-badge">XVI век</span>
+                                                <p class="small text-muted mt-2 mb-0">Полиалфавитный шифр с ключевым словом</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card cipher-card" data-cipher="fernet" onclick="selectCipher('fernet')">
+                                            <div class="card-body text-center">
+                                                <h5>💻 Современный</h5>
+                                                <span class="history-badge">XXI век</span>
+                                                <p class="small text-muted mt-2 mb-0">AES-128 в режиме CBC</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="cipher_type" name="cipher_type" value="caesar" required>
+                            </div>
+
+                            <!-- УДАЛЕН блок с исторической информацией о методах -->
+
+                            <!-- Поля для Цезаря -->
+                            <div class="mb-3 cipher-options" id="caesar_options">
+                                <label for="shift" class="form-label fw-bold">2. Сдвиг (для Цезаря):</label>
+                                <input type="number" class="form-control" id="shift" name="shift" value="3" min="1" max="25">
+                                <div class="form-text">
+                                    📌 Классический сдвиг Цезаря — 3 позиции.
+                                </div>
+                            </div>
+                            
+                            <!-- Поля для Виженера -->
+                            <div class="mb-3 cipher-options" id="vigenere_options" style="display:none;">
+                                <label for="keyword" class="form-label fw-bold">2. Ключевое слово (для Виженера):</label>
+                                <input type="text" class="form-control" id="keyword" name="keyword" value="KEY">
+                                <div class="form-text">
+                                    📌 Чем длиннее ключ, тем надежнее шифр.
+                                </div>
+                            </div>
+                            
+                            <!-- Поля для Fernet -->
+                            <div class="mb-3 cipher-options" id="fernet_options" style="display:none;">
+                                <label for="password" class="form-label fw-bold">2. Мастер-пароль (для Fernet):</label>
+                                <input type="password" class="form-control" id="password" name="password">
+                                <div class="form-text">
+                                    📌 Пароль используется для генерации ключа шифрования. Не теряйте его!
+                                </div>
+                            </div>
+                            
+                            <!-- Текст для шифрования -->
+                            <div class="mb-3">
+                                <label for="text" class="form-label fw-bold">3. Текст для шифрования:</label>
+                                <textarea class="form-control" id="text" name="text" rows="5" required 
+                                    placeholder="Введите текст, который хотите зашифровать..."></textarea>
+                            </div>
+
+                            <!-- Кнопки -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    🔒 Зашифровать
+                                </button>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="fillExample()">
+                                        📝 Пример
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info" onclick="clearForm()">
+                                        🧹 Очистить
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-muted d-flex justify-content-between">
+                        <small>🔐 Все шифры реализованы для образовательных целей</small>
+                        <a href="/about" class="text-decoration-none small">О проекте →</a>
+                    </div>
+                </div>
+
+                <!-- УДАЛЕН блок "Хотите узнать больше?" -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer с ссылкой на About -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>🔐 История шифров</h5>
+                    <p>Интерактивный проект по истории информационной безопасности</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Навигация</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white-50 text-decoration-none">Главная</a></li>
+                        <li><a href="/encrypt" class="text-white-50 text-decoration-none">Шифратор</a></li>
+                        <li><a href="/decrypt" class="text-white-50 text-decoration-none">Дешифратор</a></li>
+                        <li><a href="/about" class="text-white-50 text-decoration-none">О проекте</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>О проекте</h6>
+                    <p class="small text-white-50">
+                        Работу выполнил:<br>
+                        Татаркин Виталий, 9«А»<br>
+                        Руководитель: Шульга Ю.Ф.
+                    </p>
+                    <a href="/about" class="btn btn-sm btn-outline-light">Подробнее</a>
+                </div>
+            </div>
+            <hr class="bg-secondary">
+            <div class="text-center">
+                <p class="mb-0">© 2026 | Итоговый проект по информатике | МАОУ «Школа №27» г. Таганрога</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Выбор метода шифрования
+        function selectCipher(cipher) {
+            // Убираем выделение со всех карточек
+            document.querySelectorAll('.cipher-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Выделяем выбранную карточку
+            document.querySelector(`[data-cipher="${cipher}"]`).classList.add('selected');
+            
+            // Устанавливаем значение в скрытое поле
+            document.getElementById('cipher_type').value = cipher;
+            
+            // Показываем соответствующие опции
+            document.querySelectorAll('.cipher-options').forEach(opt => {
+                opt.style.display = 'none';
+            });
+            document.getElementById(`${cipher}_options`).style.display = 'block';
+        }
+
+        // Заполнение примера
+        function fillExample() {
+            const examples = [
+                { cipher: 'caesar', text: 'VENI VIDI VICI', shift: 3 },
+                { cipher: 'vigenere', text: 'ATTACKATDAWN', keyword: 'LEMON' },
+                { cipher: 'caesar', text: 'GALLIA EST OMNIS DIVISA IN PARTES TRES', shift: 3 }
+            ];
+            
+            const example = examples[Math.floor(Math.random() * examples.length)];
+            selectCipher(example.cipher);
+            
+            document.getElementById('text').value = example.text;
+            
+            if (example.cipher === 'caesar') {
+                document.getElementById('shift').value = example.shift || 3;
+            } else if (example.cipher === 'vigenere') {
+                document.getElementById('keyword').value = example.keyword || 'KEY';
+            }
+        }
+
+        // Очистка формы
+        function clearForm() {
+            document.getElementById('text').value = '';
+            if (document.getElementById('password')) {
+                document.getElementById('password').value = '';
+            }
+        }
+
+        // Выбираем Цезаря по умолчанию
+        window.onload = function() {
+            selectCipher('caesar');
+        };
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
