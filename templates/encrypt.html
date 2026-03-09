@@ -64,7 +64,7 @@
         </div>
     </nav>
 
-    <!-- Breadcrumbs (хлебные крошки) для навигации -->
+    <!-- Breadcrumbs (хлебные крошки) -->
     <div class="container mt-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -75,7 +75,7 @@
         </nav>
     </div>
 
-    <!-- Заголовок с кнопкой к About -->
+    <!-- Заголовок -->
     <div class="bg-primary text-white py-4">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
@@ -91,8 +91,6 @@
     </div>
 
     <div class="container my-4">
-        <!-- УДАЛЕН блок с исторической справкой -->
-
         <div class="row">
             <div class="col-md-8 mx-auto">
                 <!-- Форма шифрования -->
@@ -138,32 +136,35 @@
                                 <input type="hidden" id="cipher_type" name="cipher_type" value="caesar" required>
                             </div>
 
-                            <!-- УДАЛЕН блок с исторической информацией о методах -->
-
                             <!-- Поля для Цезаря -->
                             <div class="mb-3 cipher-options" id="caesar_options">
                                 <label for="shift" class="form-label fw-bold">2. Сдвиг (для Цезаря):</label>
                                 <input type="number" class="form-control" id="shift" name="shift" value="3" min="1" max="25">
                                 <div class="form-text">
-                                    📌 Классический сдвиг Цезаря — 3 позиции.
+                                    📌 Поддерживаются <strong>русский и английский языки</strong>. 
+                                    Буквы сдвигаются, а цифры и знаки препинания остаются без изменений.
                                 </div>
                             </div>
                             
                             <!-- Поля для Виженера -->
                             <div class="mb-3 cipher-options" id="vigenere_options" style="display:none;">
                                 <label for="keyword" class="form-label fw-bold">2. Ключевое слово (для Виженера):</label>
-                                <input type="text" class="form-control" id="keyword" name="keyword" value="KEY">
+                                <input type="text" class="form-control" id="keyword" name="keyword" value="КЛЮЧ">
                                 <div class="form-text">
-                                    📌 Чем длиннее ключ, тем надежнее шифр.
+                                    📌 Поддерживаются <strong>русский и английский языки</strong>.<br>
+                                    Ключевое слово лучше использовать на том же языке, что и текст.
+                                    Чем длиннее ключ, тем надежнее шифр.
                                 </div>
                             </div>
                             
                             <!-- Поля для Fernet -->
                             <div class="mb-3 cipher-options" id="fernet_options" style="display:none;">
                                 <label for="password" class="form-label fw-bold">2. Мастер-пароль (для Fernet):</label>
-                                <input type="password" class="form-control" id="password" name="password">
+                                <input type="password" class="form-control" id="password" name="password" value="secret">
                                 <div class="form-text">
-                                    📌 Пароль используется для генерации ключа шифрования. Не теряйте его!
+                                    📌 Fernet поддерживает <strong>любые языки и символы</strong>.<br>
+                                    Пароль используется для генерации ключа шифрования. 
+                                    <strong class="text-danger">Важно:</strong> для расшифровки понадобится сгенерированный ключ, а не этот пароль!
                                 </div>
                             </div>
                             
@@ -171,7 +172,7 @@
                             <div class="mb-3">
                                 <label for="text" class="form-label fw-bold">3. Текст для шифрования:</label>
                                 <textarea class="form-control" id="text" name="text" rows="5" required 
-                                    placeholder="Введите текст, который хотите зашифровать..."></textarea>
+                                    placeholder="Введите текст на русском, английском или смешанный...">Привет, мир! Hello World!</textarea>
                             </div>
 
                             <!-- Кнопки -->
@@ -181,7 +182,7 @@
                                 </button>
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-outline-secondary" onclick="fillExample()">
-                                        📝 Пример
+                                        📝 Случайный пример
                                     </button>
                                     <button type="button" class="btn btn-outline-info" onclick="clearForm()">
                                         🧹 Очистить
@@ -191,23 +192,22 @@
                         </form>
                     </div>
                     <div class="card-footer text-muted d-flex justify-content-between">
-                        <small>🔐 Все шифры реализованы для образовательных целей</small>
+                        <small>🔐 Все шифры поддерживают русский и английский языки</small>
                         <a href="/about" class="text-decoration-none small">О проекте →</a>
                     </div>
                 </div>
-
-                <!-- УДАЛЕН блок "Хотите узнать больше?" -->
             </div>
         </div>
     </div>
 
-    <!-- Footer с ссылкой на About -->
+    <!-- Footer -->
     <footer class="bg-dark text-white py-4 mt-5">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
                     <h5>🔐 История шифров</h5>
                     <p>Интерактивный проект по истории информационной безопасности</p>
+                    <p class="small">🇷🇺 Поддержка русского и английского языков</p>
                 </div>
                 <div class="col-md-3">
                     <h6>Навигация</h6>
@@ -256,12 +256,14 @@
             document.getElementById(`${cipher}_options`).style.display = 'block';
         }
 
-        // Заполнение примера
+        // Заполнение случайным примером
         function fillExample() {
             const examples = [
-                { cipher: 'caesar', text: 'VENI VIDI VICI', shift: 3 },
-                { cipher: 'vigenere', text: 'ATTACKATDAWN', keyword: 'LEMON' },
-                { cipher: 'caesar', text: 'GALLIA EST OMNIS DIVISA IN PARTES TRES', shift: 3 }
+                { cipher: 'caesar', text: 'Привет, мир!', shift: 3 },
+                { cipher: 'caesar', text: 'Hello World!', shift: 3 },
+                { cipher: 'vigenere', text: 'Секретное сообщение', keyword: 'КЛЮЧ' },
+                { cipher: 'vigenere', text: 'Attack at dawn', keyword: 'LEMON' },
+                { cipher: 'caesar', text: 'Русский и English вместе!', shift: 5 }
             ];
             
             const example = examples[Math.floor(Math.random() * examples.length)];
@@ -272,7 +274,7 @@
             if (example.cipher === 'caesar') {
                 document.getElementById('shift').value = example.shift || 3;
             } else if (example.cipher === 'vigenere') {
-                document.getElementById('keyword').value = example.keyword || 'KEY';
+                document.getElementById('keyword').value = example.keyword || 'КЛЮЧ';
             }
         }
 
@@ -280,7 +282,7 @@
         function clearForm() {
             document.getElementById('text').value = '';
             if (document.getElementById('password')) {
-                document.getElementById('password').value = '';
+                document.getElementById('password').value = 'secret';
             }
         }
 
