@@ -1,14 +1,12 @@
 from flask import Flask, render_template, request, jsonify, session
 from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import base64
 import os
 import sqlite3
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Секретный ключ для сессий
+app.secret_key = os.urandom(24)
 
 # Инициализация базы данных
 def init_db():
@@ -26,86 +24,53 @@ def init_db():
 
 init_db()
 
-# Главная страница
-@app.route('/')
-def index():
-    return render_template('index.html')
+# ============= РУССКИЙ И АНГЛИЙСКИЙ АЛФАВИТЫ =============
 
-# Страница "О проекте"
-@app.route('/about')
-def about():
-    return render_template('about.html')
+# Русский алфавит (33 буквы с Ё)
+RUS_UPPER = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'
+RUS_LOWER = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
 
-# ============= ФУНКЦИИ ДЛЯ РАБОТЫ С РАЗНЫМИ АЛФАВИТАМИ =============
+# Английский алфавит
+ENG_UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ENG_LOWER = 'abcdefghijklmnopqrstuvwxyz'
 
-# Словарь с алфавитами для разных языков
-ALPHABETS = {
-    'en': 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-    'ru': 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя',
-    'mixed': None  # Специальный режим для смешанного текста
-}
+def is_russian(char):
+    """Проверяет, является ли символ русской буквой"""
+    return char in RUS_UPPER or char in RUS_LOWER
 
-def detect_alphabet(char):
-    """Определяет, к какому алфавиту принадлежит символ"""
-    if 'A' <= char <= 'Z' or 'a' <= char <= 'z':
-        return 'en'
-    elif 'А' <= char <= 'Я' or 'а' <= char <= 'я' or char == 'Ё' or char == 'ё':
-        return 'ru'
-    return None
+def is_english(char):
+    """Проверяет, является ли символ английской буквой"""
+    return char in ENG_UPPER or char in ENG_LOWER
 
-def caesar_cipher(text, shift, preserve_case=True):
+def caesar_cipher(text, shift):
     """
     Шифр Цезаря с поддержкой русского и английского языков
+    shift может быть положительным (шифрование) или отрицательным (расшифровка)
     """
     result = ""
+    
     for char in text:
-        # Определяем алфавит символа
-        lang = detect_alphabet(char)
+        if is_russian(char):
+            # Русский алфавит
+            if char in RUS_UPPER:
+                idx = RUS_UPPER.index(char)
+                new_idx = (idx + shift) % 33
+                result += RUS_UPPER[new_idx]
+            else:  # нижний регистр
+                idx = RUS_LOWER.index(char)
+                new_idx = (idx + shift) % 33
+                result += RUS_LOWER[new_idx]
         
-        if lang == 'en':
+        elif is_english(char):
             # Английский алфавит
-            if char.isupper():
-                start = ord('A')
-                result += chr((ord(char) - start + shift) % 26 + start)
-            else:
-                start = ord('a')
-                result += chr((ord(char) - start + shift) % 26 + start)
-        
-        elif lang == 'ru':
-            # Русский алфавит (33 буквы + Ё)
-            if char in 'Ёё':
-                # Особая обработка для буквы Ё
-                if char == 'Ё':
-                    ru_letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'
-                else:
-                    ru_letters = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
-                
-                idx = ru_letters.index(char)
-                new_idx = (idx + shift) % 33  # 33 буквы в русском алфавите с Ё
-                result += ru_letters[new_idx]
-            else:
-                # Обычные русские буквы
-                if char.isupper():
-                    start = ord('А')
-                    # Сдвиг с учетом того, что Ё идет отдельно
-                    pos = ord(char) - start
-                    # Корректировка для букв после Ё
-                    if pos >= 6:  # После Ё (позиция 6)
-                        pos -= 1  # Ё не входит в непрерывный диапазон
-                    new_pos = (pos + shift) % 32
-                    # Обратная коррекция
-                    if new_pos >= 6:
-                        new_pos += 1
-                    result += chr(start + new_pos)
-                else:
-                    start = ord('а')
-                    pos = ord(char) - start
-                    if pos >= 6:
-                        pos -= 1
-                    new_pos = (pos + shift) % 32
-                    if new_pos >= 6:
-                        new_pos += 1
-                    result += chr(start + new_pos)
+            if char in ENG_UPPER:
+                idx = ENG_UPPER.index(char)
+                new_idx = (idx + shift) % 26
+                result += ENG_UPPER[new_idx]
+            else:  # нижний регистр
+                idx = ENG_LOWER.index(char)
+                new_idx = (idx + shift) % 26
+                result += ENG_LOWER[new_idx]
         
         else:
             # Не буква (цифры, знаки препинания) - оставляем как есть
@@ -116,162 +81,60 @@ def caesar_cipher(text, shift, preserve_case=True):
 def vigenere_cipher(text, keyword, encrypt=True):
     """
     Шифр Виженера с поддержкой русского и английского языков
-    Ключевое слово может быть на любом языке, но лучше использовать один язык
     """
     result = ""
     keyword_index = 0
     
+    # Приводим ключевое слово к верхнему регистру для простоты
+    keyword_upper = keyword.upper()
+    
     for char in text:
-        lang = detect_alphabet(char)
-        
-        if lang == 'en':
-            # Английский текст
-            if char.isupper():
-                start = ord('A')
-                # Определяем сдвиг из ключевого слова
-                key_char = keyword[keyword_index % len(keyword)]
-                key_lang = detect_alphabet(key_char)
-                
-                if key_lang == 'en':
-                    # Ключ на английском
-                    if key_char.isupper():
-                        shift = ord(key_char) - ord('A')
-                    else:
-                        shift = ord(key_char.upper()) - ord('A')
-                else:
-                    # Если ключ на другом языке, используем фиксированный сдвиг 3
-                    shift = 3
-                
-                if not encrypt:
-                    shift = -shift
-                
-                result += chr((ord(char) - start + shift) % 26 + start)
-                keyword_index += 1
+        if is_russian(char):
+            # Работаем с русским текстом
+            is_upper = char in RUS_UPPER
+            alphabet = RUS_UPPER if is_upper else RUS_LOWER
+            idx = alphabet.index(char)
+            
+            # Получаем сдвиг из ключевого слова
+            key_char = keyword_upper[keyword_index % len(keyword_upper)]
+            
+            # Определяем, на каком языке ключевой символ
+            if key_char in RUS_UPPER:
+                # Ключ на русском
+                shift = RUS_UPPER.index(key_char)
             else:
-                start = ord('a')
-                key_char = keyword[keyword_index % len(keyword)]
-                key_lang = detect_alphabet(key_char)
-                
-                if key_lang == 'en':
-                    if key_char.isupper():
-                        shift = ord(key_char) - ord('A')
-                    else:
-                        shift = ord(key_char.upper()) - ord('A')
-                else:
-                    shift = 3
-                
-                if not encrypt:
-                    shift = -shift
-                
-                result += chr((ord(char) - start + shift) % 26 + start)
-                keyword_index += 1
+                # Если ключ на английском или другом, преобразуем в число
+                # Просто используем позицию в английском алфавите
+                shift = ENG_UPPER.index(key_char) if key_char in ENG_UPPER else 3
+            
+            if not encrypt:
+                shift = -shift
+            
+            new_idx = (idx + shift) % 33
+            result += alphabet[new_idx]
+            keyword_index += 1
         
-        elif lang == 'ru':
-            # Русский текст
-            if char in 'Ёё':
-                # Особая обработка для Ё
-                ru_letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ' if char.isupper() else 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
-                key_char = keyword[keyword_index % len(keyword)]
-                
-                # Определяем сдвиг из ключа (пытаемся использовать букву ключа)
-                key_lang = detect_alphabet(key_char)
-                if key_lang == 'ru':
-                    if key_char.isupper():
-                        if key_char == 'Ё':
-                            shift = 6  # Позиция Ё
-                        else:
-                            shift = ord(key_char) - ord('А')
-                            if shift >= 6:
-                                shift -= 1
-                    else:
-                        if key_char == 'ё':
-                            shift = 6
-                        else:
-                            shift = ord(key_char) - ord('а')
-                            if shift >= 6:
-                                shift -= 1
-                else:
-                    shift = 3
-                
-                if not encrypt:
-                    shift = -shift
-                
-                idx = ru_letters.index(char)
-                new_idx = (idx + shift) % 33
-                result += ru_letters[new_idx]
-                keyword_index += 1
+        elif is_english(char):
+            # Работаем с английским текстом
+            is_upper = char in ENG_UPPER
+            alphabet = ENG_UPPER if is_upper else ENG_LOWER
+            idx = alphabet.index(char)
+            
+            # Получаем сдвиг из ключевого слова
+            key_char = keyword_upper[keyword_index % len(keyword_upper)]
+            
+            # Определяем сдвиг (пытаемся использовать русский или английский)
+            if key_char in RUS_UPPER:
+                shift = RUS_UPPER.index(key_char) % 26
             else:
-                # Обычные русские буквы
-                if char.isupper():
-                    start = ord('А')
-                    pos = ord(char) - start
-                    if pos >= 6:
-                        pos -= 1
-                    
-                    key_char = keyword[keyword_index % len(keyword)]
-                    key_lang = detect_alphabet(key_char)
-                    
-                    if key_lang == 'ru':
-                        if key_char.isupper():
-                            if key_char == 'Ё':
-                                shift = 6
-                            else:
-                                shift = ord(key_char) - ord('А')
-                                if shift >= 6:
-                                    shift -= 1
-                        else:
-                            if key_char == 'ё':
-                                shift = 6
-                            else:
-                                shift = ord(key_char) - ord('а')
-                                if shift >= 6:
-                                    shift -= 1
-                    else:
-                        shift = 3
-                    
-                    if not encrypt:
-                        shift = -shift
-                    
-                    new_pos = (pos + shift) % 32
-                    if new_pos >= 6:
-                        new_pos += 1
-                    result += chr(start + new_pos)
-                    keyword_index += 1
-                else:
-                    start = ord('а')
-                    pos = ord(char) - start
-                    if pos >= 6:
-                        pos -= 1
-                    
-                    key_char = keyword[keyword_index % len(keyword)]
-                    key_lang = detect_alphabet(key_char)
-                    
-                    if key_lang == 'ru':
-                        if key_char.isupper():
-                            if key_char == 'Ё':
-                                shift = 6
-                            else:
-                                shift = ord(key_char) - ord('А')
-                                if shift >= 6:
-                                    shift -= 1
-                        else:
-                            if key_char == 'ё':
-                                shift = 6
-                            else:
-                                shift = ord(key_char) - ord('а')
-                                if shift >= 6:
-                                    shift -= 1
-                    else:
-                        shift = 3
-                    
-                    if not encrypt:
-                        shift = -shift
-                    
-                    new_pos = (pos + shift) % 32
-                    if new_pos >= 6:
-                        new_pos += 1
-                    result += chr(start + new_pos)
-                    keyword_index += 1
+                shift = ENG_UPPER.index(key_char) if key_char in ENG_UPPER else 3
+            
+            if not encrypt:
+                shift = -shift
+            
+            new_idx = (idx + shift) % 26
+            result += alphabet[new_idx]
+            keyword_index += 1
         
         else:
             # Не буква - оставляем как есть
@@ -279,48 +142,51 @@ def vigenere_cipher(text, keyword, encrypt=True):
     
     return result
 
-# ============= МАРШРУТЫ ДЛЯ ШИФРОВАНИЯ И РАСШИФРОВКИ =============
+# ============= МАРШРУТЫ =============
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 @app.route('/encrypt', methods=['GET', 'POST'])
 def encrypt():
     if request.method == 'POST':
         text = request.form['text']
-        password = request.form.get('password', '')
         cipher_type = request.form['cipher_type']
         
         if cipher_type == 'fernet':
-            # Современное шифрование (Fernet) - работает с любым текстом
+            # Fernet работает с байтами, поэтому поддерживает любые языки
             key = Fernet.generate_key()
             f = Fernet(key)
-            encrypted = f.encrypt(text.encode())
+            encrypted = f.encrypt(text.encode('utf-8'))
             
             result = {
-                'encrypted': encrypted.decode(),
-                'key': key.decode(),
+                'encrypted': encrypted.decode('utf-8'),
+                'key': key.decode('utf-8'),
                 'note': 'Сохраните этот ключ! Он понадобится для расшифровки.'
             }
         elif cipher_type == 'caesar':
-            # Шифр Цезаря
             shift = int(request.form.get('shift', 3))
             encrypted = caesar_cipher(text, shift)
             result = {
                 'encrypted': encrypted,
                 'key': f'Сдвиг: {shift}',
-                'note': 'Поддерживаются русский и английский языки. Небуквенные символы сохраняются.'
+                'note': 'Поддерживаются русский и английский языки.'
             }
         elif cipher_type == 'vigenere':
-            # Шифр Виженера
-            keyword = request.form.get('keyword', 'KEY')
+            keyword = request.form.get('keyword', 'КЛЮЧ')
             encrypted = vigenere_cipher(text, keyword, encrypt=True)
             result = {
                 'encrypted': encrypted,
                 'key': f'Ключевое слово: {keyword}',
-                'note': 'Поддерживаются русский и английский языки. Для лучшего результата используйте ключ на том же языке, что и текст.'
+                'note': 'Поддерживаются русский и английский языки.'
             }
         
-        # Логируем операцию
         log_operation('encrypt', cipher_type)
-        
         return render_template('result.html', result=result, action='encrypt')
     
     return render_template('encrypt.html')
@@ -335,31 +201,43 @@ def decrypt():
         try:
             if cipher_type == 'fernet':
                 # Расшифровка Fernet
-                f = Fernet(key_input.encode())
-                decrypted = f.decrypt(encrypted_text.encode())
-                result = decrypted.decode()
+                key = key_input.encode('utf-8')
+                f = Fernet(key)
+                decrypted = f.decrypt(encrypted_text.encode('utf-8'))
+                result = decrypted.decode('utf-8')
+            
             elif cipher_type == 'caesar':
-                # Расшифровка Цезаря
-                shift = int(key_input.split(':')[1].strip())
+                # Извлекаем число сдвига из строки "Сдвиг: 3"
+                if ':' in key_input:
+                    shift_str = key_input.split(':')[1].strip()
+                else:
+                    shift_str = key_input.strip()
+                
+                shift = int(shift_str)
+                # Для расшифровки используем отрицательный сдвиг
                 result = caesar_cipher(encrypted_text, -shift)
+            
             elif cipher_type == 'vigenere':
-                # Расшифровка Виженера
-                keyword = key_input.split(':')[1].strip()
+                # Извлекаем ключевое слово из строки "Ключевое слово: KEY"
+                if ':' in key_input:
+                    keyword = key_input.split(':')[1].strip()
+                else:
+                    keyword = key_input.strip()
+                
                 result = vigenere_cipher(encrypted_text, keyword, encrypt=False)
             
             log_operation('decrypt', cipher_type)
-            
             return render_template('result.html', 
                                  result={'decrypted': result}, 
                                  action='decrypt')
+        
         except Exception as e:
-            print(f"Ошибка расшифровки: {e}")
-            return render_template('decrypt.html', 
-                                 error='Ошибка расшифровки. Проверьте ключ и данные.')
+            print(f"Ошибка: {e}")
+            error_msg = 'Ошибка расшифровки. Проверьте: <br>1. Правильно ли вы скопировали ключ<br>2. Совпадает ли метод шифрования<br>3. Не был ли изменен текст'
+            return render_template('decrypt.html', error=error_msg)
     
     return render_template('decrypt.html')
 
-# Логирование операций
 def log_operation(op_type, cipher_type):
     try:
         conn = sqlite3.connect('cipher_history.db')
@@ -371,18 +249,5 @@ def log_operation(op_type, cipher_type):
     except:
         pass
 
-# API для получения статистики
-@app.route('/api/stats')
-def get_stats():
-    try:
-        conn = sqlite3.connect('cipher_history.db')
-        c = conn.cursor()
-        c.execute('SELECT cipher_type, COUNT(*) FROM operations GROUP BY cipher_type')
-        stats = dict(c.fetchall())
-        conn.close()
-        return jsonify(stats)
-    except:
-        return jsonify({})
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
