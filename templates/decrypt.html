@@ -10,14 +10,22 @@
             transition: all 0.3s;
             cursor: pointer;
             border: 2px solid transparent;
+            height: 100%;
         }
         .cipher-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         .cipher-card.selected {
             border-color: #007bff;
             background-color: #f0f7ff;
+        }
+        .example-card {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .example-card:hover {
+            background-color: #f8f9fa;
         }
     </style>
 </head>
@@ -41,22 +49,20 @@
     </nav>
 
     <!-- Заголовок -->
-    <div class="bg-light py-4">
+    <div class="bg-success text-white py-4">
         <div class="container">
             <h1 class="display-5 mb-3">🔓 Дешифратор сообщений</h1>
-            <p class="lead">Расшифруйте сообщение, используя правильный ключ.</p>
+            <p class="lead mb-0">Расшифруйте сообщение, используя правильный ключ</p>
         </div>
     </div>
 
     <div class="container my-4">
-        <!-- УДАЛЕН блок с исторической справкой -->
-
         <div class="row">
             <div class="col-md-8 mx-auto">
                 <!-- Сообщение об ошибке -->
                 {% if error %}
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>❌ Ошибка!</strong> {{ error }}
+                    <strong>❌ Ошибка!</strong> {{ error|safe }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 {% endif %}
@@ -109,25 +115,31 @@
                             <!-- Ключ -->
                             <div class="mb-3">
                                 <label for="key" class="form-label fw-bold">3. Ключ расшифровки:</label>
-                                <input type="text" class="form-control" id="key" name="key" required placeholder="Например: Сдвиг: 3 или Ключевое слово: KEY">
-                                <div class="form-text">
-                                    🔑 Формат ключа зависит от метода:
+                                <input type="text" class="form-control" id="key" name="key" required placeholder="Например: Сдвиг: 3 или Ключевое слово: КЛЮЧ">
+                                <div class="form-text mt-2">
+                                    🔑 <strong>Формат ключа:</strong>
                                     <ul class="mt-1">
-                                        <li><strong>Цезарь:</strong> "Сдвиг: 3" (число от 1 до 25)</li>
-                                        <li><strong>Виженер:</strong> "Ключевое слово: KEY"</li>
+                                        <li><strong>Цезарь:</strong> "Сдвиг: 3" или просто "3"</li>
+                                        <li><strong>Виженер:</strong> "Ключевое слово: КЛЮЧ" или просто "КЛЮЧ"</li>
                                         <li><strong>Fernet:</strong> скопируйте ключ из результата шифрования</li>
                                     </ul>
+                                    <span class="badge bg-info">🇷🇺 Поддерживаются русский и английский языки</span>
                                 </div>
                             </div>
 
-                            <!-- Кнопка отправки -->
+                            <!-- Кнопки -->
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-success btn-lg">
                                     🔓 Расшифровать
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" onclick="fillExample()">
-                                    📝 Заполнить пример
-                                </button>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="fillRandomExample()">
+                                        🎲 Случайный пример
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger" onclick="clearForm()">
+                                        🧹 Очистить
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -140,23 +152,43 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="card mb-3">
+                            <div class="col-md-6 mb-3">
+                                <div class="card example-card" onclick="useExample('caesar_en')">
                                     <div class="card-body">
-                                        <h6>🏛️ Шифр Цезаря</h6>
-                                        <p><strong>Текст:</strong> Fdhvdu<br>
-                                        <strong>Ключ:</strong> Сдвиг: 3</p>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="useExample('caesar')">Использовать</button>
+                                        <h6>🏛️ Цезарь (английский)</h6>
+                                        <p class="mb-1"><strong>Текст:</strong> Fdhvdu</p>
+                                        <p class="mb-0"><strong>Ключ:</strong> Сдвиг: 3</p>
+                                        <small class="text-muted">→ должно получиться "Caesar"</small>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="card mb-3">
+                            <div class="col-md-6 mb-3">
+                                <div class="card example-card" onclick="useExample('caesar_ru')">
                                     <div class="card-body">
-                                        <h6>📜 Шифр Виженера</h6>
-                                        <p><strong>Текст:</strong> Lxfopv<br>
-                                        <strong>Ключ:</strong> Ключевое слово: LEMON</p>
-                                        <button class="btn btn-sm btn-outline-success" onclick="useExample('vigenere')">Использовать</button>
+                                        <h6>🏛️ Цезарь (русский)</h6>
+                                        <p class="mb-1"><strong>Текст:</strong> Тулжз</p>
+                                        <p class="mb-0"><strong>Ключ:</strong> Сдвиг: 3</p>
+                                        <small class="text-muted">→ должно получиться "Привет"</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card example-card" onclick="useExample('vigenere_en')">
+                                    <div class="card-body">
+                                        <h6>📜 Виженер (английский)</h6>
+                                        <p class="mb-1"><strong>Текст:</strong> Lxfopv</p>
+                                        <p class="mb-0"><strong>Ключ:</strong> Ключевое слово: LEMON</p>
+                                        <small class="text-muted">→ должно получиться "Attack"</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card example-card" onclick="useExample('vigenere_ru')">
+                                    <div class="card-body">
+                                        <h6>📜 Виженер (русский)</h6>
+                                        <p class="mb-1"><strong>Текст:</strong> Нкыти</p>
+                                        <p class="mb-0"><strong>Ключ:</strong> Ключевое слово: КЛЮЧ</p>
+                                        <small class="text-muted">→ должно получиться "Атака"</small>
                                     </div>
                                 </div>
                             </div>
@@ -167,10 +199,38 @@
         </div>
     </div>
 
+    <!-- Footer -->
     <footer class="bg-dark text-white py-4 mt-5">
-        <div class="container text-center">
-            <p class="mb-0">Итоговый проект по информатике | История информационной безопасности</p>
-            <p class="mb-0">Работу выполнил: Татаркин Виталий, 9«А» класс | Руководитель: Шульга Ю.Ф.</p>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>🔐 История шифров</h5>
+                    <p>Интерактивный проект по истории информационной безопасности</p>
+                    <p class="small">🇷🇺 Поддержка русского и английского языков</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Навигация</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white-50 text-decoration-none">Главная</a></li>
+                        <li><a href="/encrypt" class="text-white-50 text-decoration-none">Шифратор</a></li>
+                        <li><a href="/decrypt" class="text-white-50 text-decoration-none">Дешифратор</a></li>
+                        <li><a href="/about" class="text-white-50 text-decoration-none">О проекте</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>О проекте</h6>
+                    <p class="small text-white-50">
+                        Работу выполнил:<br>
+                        Татаркин Виталий, 9«А»<br>
+                        Руководитель: Шульга Ю.Ф.
+                    </p>
+                    <a href="/about" class="btn btn-sm btn-outline-light">Подробнее</a>
+                </div>
+            </div>
+            <hr class="bg-secondary">
+            <div class="text-center">
+                <p class="mb-0">© 2026 | Итоговый проект по информатике | МАОУ «Школа №27» г. Таганрога</p>
+            </div>
         </div>
     </footer>
 
@@ -184,29 +244,51 @@
             document.getElementById('cipher_type').value = cipher;
         }
 
+        // Использовать пример
         function useExample(type) {
-            if (type === 'caesar') {
+            if (type === 'caesar_en') {
                 selectCipher('caesar');
                 document.getElementById('encrypted_text').value = 'Fdhvdu';
                 document.getElementById('key').value = 'Сдвиг: 3';
-            } else if (type === 'vigenere') {
+            } else if (type === 'caesar_ru') {
+                selectCipher('caesar');
+                document.getElementById('encrypted_text').value = 'Тулжз';
+                document.getElementById('key').value = 'Сдвиг: 3';
+            } else if (type === 'vigenere_en') {
                 selectCipher('vigenere');
                 document.getElementById('encrypted_text').value = 'Lxfopv';
                 document.getElementById('key').value = 'Ключевое слово: LEMON';
+            } else if (type === 'vigenere_ru') {
+                selectCipher('vigenere');
+                document.getElementById('encrypted_text').value = 'Нкыти';
+                document.getElementById('key').value = 'Ключевое слово: КЛЮЧ';
             }
         }
 
-        function fillExample() {
+        // Случайный пример
+        function fillRandomExample() {
             const examples = [
-                { cipher: 'caesar', text: 'Fdhvdu', key: 'Сдвиг: 3' },
-                { cipher: 'vigenere', text: 'Lxfopv', key: 'Ключевое слово: LEMON' }
+                { type: 'caesar_en', text: 'Fdhvdu', key: 'Сдвиг: 3' },
+                { type: 'caesar_ru', text: 'Тулжз', key: 'Сдвиг: 3' },
+                { type: 'vigenere_en', text: 'Lxfopv', key: 'Ключевое слово: LEMON' },
+                { type: 'vigenere_ru', text: 'Нкыти', key: 'Ключевое слово: КЛЮЧ' },
+                { type: 'caesar_en', text: 'Khoor', key: 'Сдвиг: 3' },
+                { type: 'caesar_ru', text: 'Умзфй', key: 'Сдвиг: 4' }
             ];
             const example = examples[Math.floor(Math.random() * examples.length)];
-            selectCipher(example.cipher);
+            
+            selectCipher(example.type.split('_')[0]);
             document.getElementById('encrypted_text').value = example.text;
             document.getElementById('key').value = example.key;
         }
 
+        // Очистка формы
+        function clearForm() {
+            document.getElementById('encrypted_text').value = '';
+            document.getElementById('key').value = '';
+        }
+
+        // Выбираем Цезаря по умолчанию
         window.onload = function() {
             selectCipher('caesar');
         };
